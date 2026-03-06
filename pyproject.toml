@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "opensearch-orchestrator"
+name = "opensearch-launchpad"
 version = "0.2.5"
 description = "OpenSearch Solution Architect MCP server — guides you from requirements to a running search setup"
 readme = "readme.md"
@@ -45,14 +45,14 @@ Repository = "https://github.com/SearchLearning/agent"
 Issues = "https://github.com/SearchLearning/agent/issues"
 
 [project.scripts]
-opensearch-orchestrator = "opensearch_orchestrator.mcp_server:main"
+opensearch-launchpad = "opensearch_orchestrator.mcp_server:main"
 
 [tool.hatch.build]
 include = [
     "opensearch_orchestrator/**/*.py",
-    "opensearch_orchestrator/scripts/knowledge/*.md",
-    "opensearch_orchestrator/scripts/sample_data/*",
-    "opensearch_orchestrator/scripts/ui/search_builder/*",
+    "opensearch_orchestrator/knowledge/*.md",
+    "opensearch_orchestrator/sample_data/*",
+    "opensearch_orchestrator/ui/search_builder/*",
     "readme.md",
 ]
 
@@ -62,9 +62,9 @@ packages = ["opensearch_orchestrator"]
 [tool.hatch.build.targets.sdist]
 include = [
     "opensearch_orchestrator/**/*.py",
-    "opensearch_orchestrator/scripts/knowledge/*.md",
-    "opensearch_orchestrator/scripts/sample_data/*",
-    "opensearch_orchestrator/scripts/ui/search_builder/*",
+    "opensearch_orchestrator/knowledge/*.md",
+    "opensearch_orchestrator/sample_data/*",
+    "opensearch_orchestrator/ui/search_builder/*",
     "tests/**/*.py",
     "readme.md",
     "pyproject.toml",

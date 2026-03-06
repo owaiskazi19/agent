@@ -3,7 +3,7 @@
     "opensearch-orchestrator": {
       "command": "uv",
       "args": ["run", "opensearch_orchestrator/mcp_server.py"],
-      "cwd": "/Users/kaituo/code/poc/agent-poc",
+      "cwd": "/Users/owais/agent",
       "env": {
         "OPENSEARCH_MCP_PLANNER_MODE": "client"
       }

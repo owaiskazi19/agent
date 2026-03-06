@@ -40,11 +40,11 @@ except ImportError:  # pragma: no cover - non-POSIX fallback
 
 from opensearch_orchestrator.orchestrator import create_transport_agnostic_engine
 from opensearch_orchestrator.planning_session import PlanningSession
-from opensearch_orchestrator.scripts.shared import Phase
+from opensearch_orchestrator.shared import Phase
 from opensearch_orchestrator.solution_planning_assistant import (
     SYSTEM_PROMPT as PLANNER_SYSTEM_PROMPT,
 )
-from opensearch_orchestrator.scripts.tools import (
+from opensearch_orchestrator.tools import (
     BUILTIN_IMDB_SAMPLE_PATH,
     submit_sample_doc,
     submit_sample_doc_from_local_file,
@@ -57,7 +57,7 @@ from opensearch_orchestrator.scripts.tools import (
     read_sparse_vector_models,
     search_opensearch_org,
 )
-from opensearch_orchestrator.scripts.opensearch_ops_tools import (
+from opensearch_orchestrator.opensearch_ops_tools import (
     SEARCH_UI_HOST,
     SEARCH_UI_PORT,
     create_index as create_index_impl,
