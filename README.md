@@ -6,7 +6,7 @@ An MCP-powered assistant that guides you from initial requirements to a running 
 
 ## Kiro Power (Primary Integration)
 
-OpenSearch Launchpad is packaged as a **Kiro Power**. Install it in Kiro by adding this repo as a power source. Kiro reads `POWER.md` for workflow instructions and calls MCP tools exposed by the server.
+OpenSearch Launchpad is packaged as a **Kiro Power**. Install it in Kiro by adding https://github.com/opensearch-project/opensearch-launchpad/tree/main/kiro/opensearch-launchpad as a power source. Kiro reads `POWER.md` for workflow instructions and calls MCP tools exposed by the server.
 
 The `mcp.json` at the repo root runs `uvx opensearch-launchpad@latest` — no local clone required.
 
