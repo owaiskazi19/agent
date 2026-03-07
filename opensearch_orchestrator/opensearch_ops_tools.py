@@ -6118,14 +6118,14 @@ def create_bedrock_agentic_model_with_creds(
             "parameters": {
                 "region": region.strip(),
                 "service_name": "bedrock",
-                "model": model_name
+                "model": "us.anthropic.claude-sonnet-4-20250514-v1:0"
             },
             "credential": credential_config,
             "actions": [
                 {
                     "action_type": "predict",
                     "method": "POST",
-                    "url": f"https://bedrock-runtime.{region.strip()}.amazonaws.com/model/{model_name}/converse",
+                    "url": f"https://bedrock-runtime.{region.strip()}.amazonaws.com/model/us.anthropic.claude-sonnet-4-20250514-v1:0/converse",
                     "headers": {
                         "content-type": "application/json"
                     },
