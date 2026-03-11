@@ -126,3 +126,136 @@ The workflow is driven by the Kiro AI reading `POWER.md`. Each phase calls speci
 | Package manager | `uv` / `uvx` |
 | Distribution | PyPI (`opensearch-launchpad`) |
 | IDE integration | Kiro Power (`POWER.md` + `mcp.json`) |
+
+
+## 6. Design Flow
+
+┌─────────────────────────────────────────────────────────────────────┐
+│                        USER INSTALLS POWER                          │
+└─────────────────────────┬───────────────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  KIRO reads kiro/opensearch-launchpad/                              │
+│                                                                     │
+│  ┌──────────┐  ┌──────────┐  ┌─────────────────────────────────┐    │
+│  │ POWER.md │  │ mcp.json │  │ steering/                       │    │
+│  │ Agent    │  │ Launch   │  │  ├─ opensearch-workflow.md(auto)│    │
+│  │ rules &  │  │ config   │  │  ├─ oui-*.md (fileMatch)        │    │
+│  │ workflow │  │ for MCP  │  │  └─ aws/*.md (manual)           │    │
+│  └────┬─────┘  └────┬─────┘  └──────────────┬──────────────────┘    │
+└───────┼─────────────┼───────────────────────┼───────────────────────┘
+        │             │                       │
+        ▼             ▼                       ▼
+  Loaded into    Kiro spawns:            auto → always in context
+  agent context  uvx opensearch-         fileMatch → when editing UI
+  on activation  launchpad@latest        manual → on-demand only
+                       │
+                       ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│              MCP SERVER (opensearch-launchpad PyPI package)         │
+│              Child process, stdio JSON-RPC                          │
+│                                                                     │
+│  orchestrator_engine.py ← state machine (phases)                    │
+│  opensearch_ops_tools.py ← OpenSearch operations (Docker, index)    │
+│  solution_planning_assistant.py ← AI planner agent                  │
+│  worker.py ← execution agent                                        │
+│  tools.py ← sample loading, knowledge base reading                  │
+│  knowledge/*.md ← agent knowledge bases (inside PyPI package)       │
+└─────────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════
+                         RUNTIME WORKFLOW
+═══════════════════════════════════════════════════════════════════════
+
+User: "Build me a semantic search app"
+        │
+        ▼
+  Kiro agent reads POWER.md + auto steering → knows the workflow
+        │
+        ▼
+╔═══════════════════════════════════════════════════════════════╗
+║  PHASE 1: Collect Sample                                      ║
+║  Agent ──MCP──► load_sample(source_type, source_value, ...)   ║
+║  Returns: sample_doc, inferred_text_fields, text_search_req   ║
+╚═══════════════════════════╤═══════════════════════════════════╝
+                            │
+╔═══════════════════════════╧═══════════════════════════════════╗
+║  PHASE 2: Gather Preferences (one question per turn)          ║
+║  Agent asks user → budget? performance? query pattern?        ║
+║  Agent ──MCP──► set_preferences(budget, perf, query, deploy)  ║
+╚═══════════════════════════╤═══════════════════════════════════╝
+                            │
+╔═══════════════════════════╧═══════════════════════════════════╗
+║  PHASE 3: Plan                                                ║
+║  Agent ──MCP──► start_planning()                              ║
+║         ┌──────┴──────┐                                       ║
+║         ▼             ▼                                       ║
+║    Server-side    Manual mode                                 ║
+║    planner        (client LLM plans)                          ║
+║         └──────┬──────┘                                       ║
+║                ▼                                              ║
+║  Show proposal → user feedback → refine_plan() loop           ║
+║  Agent ──MCP──► finalize_plan()                               ║
+╚═══════════════════════════╤═══════════════════════════════════╝
+                            │
+╔═══════════════════════════╧═══════════════════════════════════╗
+║  PHASE 4: Execute (local Docker OpenSearch)                   ║
+║  Agent ──MCP──► execute_plan()                                ║
+║                                                               ║
+║  MCP server internally:                                       ║
+║    1. Spin up Docker OpenSearch (security disabled)           ║
+║    2. Create index with mappings                              ║
+║    3. Deploy ML models (dense/sparse/agentic)                 ║
+║    4. Create ingest pipeline                                  ║
+║    5. Index sample documents                                  ║
+║    6. Launch Search UI (localhost:8888)                       ║
+║    7. Capability-driven verification                          ║
+║                                                               ║
+║  Returns: ui_access URLs, execution report                    ║
+╚═══════════════════════════╤═══════════════════════════════════╝
+                            │
+╔═══════════════════════════╧═══════════════════════════════════╗
+║  PHASE 4.5: Evaluate (optional)                               ║
+║  Agent ──MCP──► start_evaluation()                            ║
+║  Returns: quality summary, issues, suggested_preferences      ║
+║  If user wants to improve → restart from Phase 1              ║
+╚═══════════════════════════╤═══════════════════════════════════╝
+                            │
+╔═══════════════════════════╧═══════════════════════════════════╗
+║  PHASE 5: Deploy to AWS (optional)                            ║
+║                                                               ║
+║  Agent ──MCP──► prepare_aws_deployment()                      ║
+║                    │                                          ║
+║                    ▼                                          ║
+║  Returns:                                                     ║
+║    deployment_target: "domain" or "serverless"                ║
+║    steering_files: [                                          ║
+║      "steering/aws/domain-01-provision.md",                   ║
+║      "steering/aws/domain-02-deploy-search.md",               ║
+║      "steering/aws/domain-03-agentic-setup.md"                ║
+║    ]                                                          ║
+║    required_mcp_servers: [aws-api, opensearch-mcp, aws-docs]  ║
+║                    │                                          ║
+║                    ▼                                          ║
+║  ┌─────────────────────────────────────────────────────┐      ║
+║  │  POWER.md tells agent:                              │      ║
+║  │  "Read each steering file in order"                 │      ║
+║  │                                                     │      ║
+║  │  Agent reads steering/aws/domain-01-provision.md    │      ║
+║  │    → Uses AWS API MCP to create OpenSearch domain   │      ║
+║  │    → Updates .opensearch-deploy-state.json          │      ║
+║  │                                                     │      ║
+║  │  Agent reads steering/aws/domain-02-deploy-search   │      ║
+║  │    → Creates index, pipeline, ingests data on AWS   │      ║
+║  │    → Uses opensearch-mcp-server for OS operations   │      ║
+║  │                                                     │      ║
+║  │  Agent reads steering/aws/domain-03-agentic-setup   │      ║
+║  │    → Registers Bedrock model, creates agent         │      ║
+║  │    → Sets up agentic search pipeline                │      ║
+║  └─────────────────────────────────────────────────────┘      ║
+║                    │                                          ║
+║                    ▼                                          ║
+║  Agent ──MCP──► connect_search_ui_to_endpoint(aws_endpoint)   ║
+║  Search UI now queries AWS cluster instead of local Docker    ║
+╚═══════════════════════════════════════════════════════════════╝
