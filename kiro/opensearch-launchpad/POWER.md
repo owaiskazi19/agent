@@ -348,3 +348,5 @@ This power provides an OpenSearch Search Solution building workflow. It collects
 - Python 3.11+, uv, and Docker are required for Phases 1-4 (local development)
 - AWS credentials and MCP servers are required for Phase 5 (AWS deployment) - see AWS Setup section
 - See the [Onboarding](#onboarding) section for detailed setup instructions
+
+This power integrates with opensearch-launchpad (Apache-2.0 license).
