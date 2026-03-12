@@ -130,6 +130,7 @@ The workflow is driven by the Kiro AI reading `POWER.md`. Each phase calls speci
 
 ## 6. Design Flow
 
+```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                        USER INSTALLS POWER                          │
 └─────────────────────────┬───────────────────────────────────────────┘
@@ -259,3 +260,4 @@ User: "Build me a semantic search app"
 ║  Agent ──MCP──► connect_search_ui_to_endpoint(aws_endpoint)   ║
 ║  Search UI now queries AWS cluster instead of local Docker    ║
 ╚═══════════════════════════════════════════════════════════════╝
+```
