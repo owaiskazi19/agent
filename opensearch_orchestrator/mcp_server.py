@@ -28,6 +28,13 @@ import os
 from pathlib import Path
 import re
 import sys
+
+# BaseExceptionGroup is a builtin on 3.11+; on 3.10 use the backport
+# shipped by anyio's exceptiongroup dependency.
+try:
+    BaseExceptionGroup  # noqa: B018
+except NameError:
+    from exceptiongroup import BaseExceptionGroup  # type: ignore[no-redef]
 from typing import Any
 
 import anyio

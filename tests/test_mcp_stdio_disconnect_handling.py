@@ -2,6 +2,12 @@ import anyio
 
 from opensearch_orchestrator.mcp_server import _is_expected_stdio_disconnect
 
+# ExceptionGroup is a builtin on 3.11+; on 3.10 use the backport.
+try:
+    ExceptionGroup  # noqa: B018
+except NameError:
+    from exceptiongroup import ExceptionGroup  # type: ignore[no-redef]
+
 
 def test_expected_disconnect_group_returns_true() -> None:
     exc = ExceptionGroup(
