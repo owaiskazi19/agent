@@ -21,7 +21,7 @@ Works with **Claude Code**, **Cursor**, **Kiro**, and any agent that supports th
 Install any skill into your project using [`npx skills`](https://agentskills.io):
 
 ```bash
-npx skills add opensearch-project/opensearch-agent-skills
+npx skills add opensearch-project/opensearch-launchpad
 ```
 
 This discovers skills under `skills/` and symlinks them into your agent's skill directory (`.claude/skills/`, `.cursor/skills/`, etc.). Works with Claude Code, Cursor, OpenCode, Codex, and [many more](https://agentskills.io).
@@ -30,16 +30,16 @@ This discovers skills under `skills/` and symlinks them into your agent's skill 
 
 ```bash
 # Install to a specific agent
-npx skills add opensearch-project/opensearch-agent-skills -a claude-code
+npx skills add opensearch-project/opensearch-launchpad -a claude-code
 
 # Install globally (available across all projects)
-npx skills add opensearch-project/opensearch-agent-skills -g
+npx skills add opensearch-project/opensearch-launchpad -g
 
 # Install to all detected agents
-npx skills add opensearch-project/opensearch-agent-skills --all
+npx skills add opensearch-project/opensearch-launchpad --all
 
 # List available skills before installing
-npx skills add opensearch-project/opensearch-agent-skills --list
+npx skills add opensearch-project/opensearch-launchpad --list
 ```
 
 After installing, try:

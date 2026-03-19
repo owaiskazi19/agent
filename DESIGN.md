@@ -342,7 +342,7 @@ engine. The IDE agent is the orchestrator, guided by SKILL.md.
 ## 6. Directory Structure
 
 ```
-opensearch-agent-skills/
+opensearch-launchpad/
     skills/                                 # All agent skills, organized by domain
         opensearch-launchpad/
                 SKILL.md                    # Workflow instructions (< 500 lines)
