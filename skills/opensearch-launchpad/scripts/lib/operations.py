@@ -127,15 +127,30 @@ def index_bulk(index_name: str, docs: list[dict], id_prefix: str = "doc") -> str
     client = create_client()
     indexed = []
     errors = []
+    bulk_body: list[dict] = []
+    doc_id_list: list[str] = []
+
     for i, doc in enumerate(docs, 1):
         doc_id = f"{id_prefix}-{i}"
+        bulk_body.append({"index": {"_index": index_name, "_id": doc_id}})
+        bulk_body.append(doc)
+        doc_id_list.append(doc_id)
+
+    if bulk_body:
         try:
-            client.index(index=index_name, body=doc, id=doc_id)
-            indexed.append(doc_id)
+            resp = client.bulk(body=bulk_body)
+            for item, doc_id in zip(resp.get("items", []), doc_id_list):
+                action_result = item.get("index", {})
+                if action_result.get("error"):
+                    errors.append(f"{doc_id}: {action_result['error']}")
+                else:
+                    indexed.append(doc_id)
         except Exception as e:
-            errors.append(f"{doc_id}: {e}")
+            errors.append(f"bulk request failed: {e}")
+
     if indexed:
         client.indices.refresh(index=index_name)
+
     return json.dumps({
         "index_name": index_name,
         "indexed_count": len(indexed),

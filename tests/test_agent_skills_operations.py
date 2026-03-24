@@ -75,9 +75,39 @@ class _FakeClient:
         self._indexed = []
         self._get_response = {}
         self._search_response = {"hits": {"hits": [], "total": {"value": 0}}, "took": 1}
+        self._bulk_errors = []  # For simulating bulk errors
 
     def index(self, index, body, id):
         self._indexed.append((index, body, id))
+
+    def bulk(self, body):
+        """Simulate bulk indexing API"""
+        items = []
+        # Process bulk body (alternating action/doc pairs)
+        for i in range(0, len(body), 2):
+            action = body[i]
+            doc = body[i + 1]
+
+            # Check if this doc should error (for partial failure tests)
+            doc_id = action["index"]["_id"]
+            if doc_id in self._bulk_errors:
+                items.append({
+                    "index": {
+                        "_id": doc_id,
+                        "error": {"type": "simulated_error", "reason": "test error"}
+                    }
+                })
+            else:
+                items.append({
+                    "index": {
+                        "_id": doc_id,
+                        "_index": action["index"]["_index"],
+                        "result": "created"
+                    }
+                })
+                self._indexed.append((action["index"]["_index"], doc, doc_id))
+
+        return {"items": items, "errors": len(self._bulk_errors) > 0}
 
     def get(self, index, id):
         return self._get_response or {"_source": {}, "_id": id}
@@ -212,23 +242,16 @@ def test_index_bulk_success(monkeypatch):
 
 
 def test_index_bulk_partial_failure(monkeypatch):
-    call_count = 0
-
-    class _PartialFailClient(_FakeClient):
-        def index(self, index, body, id):
-            nonlocal call_count
-            call_count += 1
-            if call_count == 2:
-                raise Exception("bad doc")
-
-    monkeypatch.setattr("lib.operations.create_client", lambda: _PartialFailClient())
+    fake = _FakeClient()
+    fake._bulk_errors = ["doc-2"]  # Simulate doc-2 failing
+    monkeypatch.setattr("lib.operations.create_client", lambda: fake)
 
     docs = [{"a": 1}, {"a": 2}, {"a": 3}]
     result = json.loads(index_bulk("bulk-index", docs))
 
     assert result["indexed_count"] == 2
     assert len(result["errors"]) == 1
-    assert "bad doc" in result["errors"][0]
+    assert "doc-2" in result["errors"][0]
 
 
 # ---------------------------------------------------------------------------
