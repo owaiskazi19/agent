@@ -370,4 +370,7 @@ def connect_ui(
 
 
 def cleanup_ui() -> str:
-    return "Search UI cleanup: the UI server runs as a daemon thread and stops when the script exits."
+    """Clean up the UI server and clear any stored cluster credentials."""
+    from .client import clear_cluster_credentials
+    clear_cluster_credentials()
+    return "Search UI cleanup: the UI server runs as a daemon thread and stops when the script exits. Cluster credentials cleared."
