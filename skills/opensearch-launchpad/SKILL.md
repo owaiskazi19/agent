@@ -128,7 +128,26 @@ uv run python scripts/opensearch_ops.py <command> [options]
 
 ### Phase 1 — Start OpenSearch & Collect Sample
 
-Start OpenSearch, then ask the user for their data source. Use `load-sample` to load data. The output includes inferred text fields — use these to inform the plan.
+**Before starting OpenSearch**, check if a cluster is already running:
+
+```bash
+uv run python scripts/opensearch_ops.py preflight-check
+```
+
+**Interpreting the preflight result:**
+
+- **`status: "available"`** — A cluster is already running and reachable. Use it directly. The `auth_mode` field shows which authentication was detected (`none`, `default`, or `custom`).
+- **`status: "auth_required"`** — A cluster is running but requires credentials. Ask the user for their username and password, then run:
+  ```bash
+  uv run python scripts/opensearch_ops.py preflight-check --auth-mode custom --username <user> --password <pass>
+  ```
+  If successful, the credentials are persisted for the session and all subsequent commands will use them automatically.
+- **`status: "no_cluster"`** — No cluster detected. Start one:
+  ```bash
+  bash scripts/start_opensearch.sh
+  ```
+
+Once a cluster is available, ask the user for their data source. Use `load-sample` to load data. The output includes inferred text fields — use these to inform the plan.
 
 If the user provides PDF, DOCX, PPTX, XLSX, or other document files (not structured data like CSV/JSON/TSV), use Docling to process them before indexing. Read `references/knowledge/document_processing_guide.md` for the full workflow. In summary:
 

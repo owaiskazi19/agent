@@ -13,6 +13,7 @@ Usage:
 
 Commands:
     status                 Check OpenSearch connectivity
+    preflight-check        Check if OpenSearch cluster is already running
     create-index           Create an index with mappings
     deploy-model           Deploy a local pretrained ML model
     deploy-bedrock         Register a Bedrock embedding model
@@ -54,6 +55,16 @@ def cmd_status(args):
         print(json.dumps({"reachable": False}))
     except Exception as e:
         print(json.dumps({"reachable": False, "error": str(e)}))
+
+
+def cmd_preflight_check(args):
+    from lib.client import preflight_check_cluster
+    result = preflight_check_cluster(
+        auth_mode=args.auth_mode or "",
+        username=args.username or "",
+        password=args.password or "",
+    )
+    print(json.dumps(result, indent=2))
 
 
 def cmd_create_index(args):
@@ -278,6 +289,13 @@ def main():
     # status
     sub.add_parser("status", help="Check OpenSearch connectivity")
 
+    # preflight-check
+    p = sub.add_parser("preflight-check", help="Check if OpenSearch cluster is already running")
+    p.add_argument("--auth-mode", default="", choices=["", "none", "default", "custom"],
+                   help="Authentication mode: auto-detect (default), none, default, or custom")
+    p.add_argument("--username", default="", help="Username for custom auth mode")
+    p.add_argument("--password", default="", help="Password for custom auth mode")
+
     # create-index
     p = sub.add_parser("create-index", help="Create an index")
     p.add_argument("--name", required=True)
@@ -376,6 +394,7 @@ def main():
 
     dispatch = {
         "status": cmd_status,
+        "preflight-check": cmd_preflight_check,
         "create-index": cmd_create_index,
         "deploy-model": cmd_deploy_model,
         "deploy-bedrock": cmd_deploy_bedrock,
