@@ -1,18 +1,16 @@
 ---
 name: opensearch-launchpad
 description: >
-  Build search applications with OpenSearch and answer OpenSearch knowledge
-  questions. Guides you through setting up semantic search, vector search,
-  hybrid search, neural search, BM25, dense vector, sparse vector, agentic
-  search, RAG, retrieval, embeddings, and KNN. Sets up OpenSearch locally via
-  Docker, plans search architecture, creates indices, ML models, ingest
-  pipelines, launches a search UI, and optionally deploys to AWS OpenSearch
-  Service or Serverless. Processes PDF, DOCX, PPTX, and other document formats
-  using Docling for chunking and ingestion. Searches OpenSearch documentation
-  to answer questions about features, APIs, configuration, version history,
-  and best practices. Use when the user mentions OpenSearch, search app, index
-  setup, search architecture, document search, search relevance, PDF ingestion,
-  document processing, or any related search topic.
+  Build search applications and query log analytics data with OpenSearch.
+  Use this skill when the user mentions OpenSearch, search app, index setup,
+  search architecture, semantic search, vector search, hybrid search, BM25,
+  dense vector, sparse vector, agentic search, RAG, embeddings, KNN, PDF
+  ingestion, document processing, or any related search topic. Also use for
+  log analytics and observability — when the user wants to set up log
+  ingestion, query logs with PPL, analyze error patterns, set up index
+  lifecycle policies, investigate traces, or check stack health. Activate
+  even if the user says log analysis, Fluent Bit, Fluentd, Logstash, syslog,
+  traceId, OpenTelemetry, or log analytics without mentioning OpenSearch.
 compatibility: Requires Docker and uv. AWS deployment requires AWS credentials.
 metadata:
   author: opensearch-project
@@ -62,7 +60,63 @@ These MCP servers enhance the skill with documentation lookup, AWS knowledge, an
 - **`ddg-search`** — Search OpenSearch documentation via DuckDuckGo. Use `search(query="site:opensearch.org <your query>")` to find docs, then `fetch_content(url)` to read the full page.
 - **`awslabs.aws-api-mcp-server`** — AWS API calls (required for Phase 5 deployment, also useful for general AWS questions).
 - **`aws-knowledge-mcp-server`** — AWS documentation lookup.
-- **`opensearch-mcp-server`** — Direct OpenSearch API access on remote clusters.
+- **`opensearch-mcp-server`** — Direct OpenSearch API access on local and remote clusters, including Amazon OpenSearch Service (AOS) and Serverless (AOSS). Handles SigV4 auth transparently. See the [User Guide](https://github.com/opensearch-project/opensearch-mcp-server-py/blob/main/USER_GUIDE.md) for full configuration options.
+
+### opensearch-mcp-server Configuration Variants
+
+The JSON block above shows a minimal config. For AOS/AOSS clusters, ask the user for their endpoint, auth method, and region, then use the appropriate env block:
+
+For basic auth (local/self-managed):
+```json
+{
+  "opensearch-mcp-server": {
+    "command": "uvx",
+    "args": ["opensearch-mcp-server-py@latest"],
+    "env": {
+      "OPENSEARCH_URL": "<endpoint_url>",
+      "OPENSEARCH_USERNAME": "<username>",
+      "OPENSEARCH_PASSWORD": "<password>",
+      "OPENSEARCH_SSL_VERIFY": "false",
+      "FASTMCP_LOG_LEVEL": "ERROR"
+    }
+  }
+}
+```
+
+For Amazon OpenSearch Service (AOS):
+```json
+{
+  "opensearch-mcp-server": {
+    "command": "uvx",
+    "args": ["opensearch-mcp-server-py@latest"],
+    "env": {
+      "OPENSEARCH_URL": "<endpoint_url>",
+      "AWS_REGION": "<region>",
+      "AWS_PROFILE": "<profile>",
+      "FASTMCP_LOG_LEVEL": "ERROR"
+    }
+  }
+}
+```
+
+For Amazon OpenSearch Serverless (AOSS):
+```json
+{
+  "opensearch-mcp-server": {
+    "command": "uvx",
+    "args": ["opensearch-mcp-server-py@latest"],
+    "env": {
+      "OPENSEARCH_URL": "<endpoint_url>",
+      "AWS_REGION": "<region>",
+      "AWS_PROFILE": "<profile>",
+      "AWS_OPENSEARCH_SERVERLESS": "true",
+      "FASTMCP_LOG_LEVEL": "ERROR"
+    }
+  }
+}
+```
+
+If the cluster type is unclear, ask the user: "Is this a local OpenSearch cluster, Amazon OpenSearch Service, or Amazon OpenSearch Serverless?"
 
 ## Auto-Installing Missing MCP Servers
 
@@ -78,8 +132,8 @@ Before using any MCP tool, check if the server is available. If a required MCP s
 2. Read the existing config (or start with `{"mcpServers": {}}` if the file doesn't exist).
 3. Merge in the missing server entry from the JSON block above. Do not overwrite existing entries.
 4. Save the file.
-5. Inform the user: *"I've added the [server name] MCP server to your config. It should connect in a few seconds."*
-6. Wait briefly and retry the tool call.
+5. Inform the user: *"I've added the [server name] MCP server to your config. Please restart your IDE or reconnect MCP servers for the changes to take effect."*
+6. Wait for the user to confirm the restart, then retry the tool call.
 
 ## Answering OpenSearch Knowledge Questions
 
@@ -196,3 +250,13 @@ Only if the user wants AWS deployment. Read the appropriate reference guide:
 **Required MCP servers for Phase 5:** `awslabs.aws-api-mcp-server`, `aws-knowledge-mcp-server`, `opensearch-mcp-server` (see Optional MCP Servers section above).
 
 See [AWS Reference](references/aws-reference.md) for cost, security, and constraints.
+
+## Observability & Log Analytics
+
+When the user wants to analyze logs or investigate observability data in OpenSearch, follow a discovery-first approach: understand what indices exist, learn the schema from mappings and sample documents, then build queries. Read the appropriate reference file based on intent:
+
+| Intent | Reference |
+|---|---|
+| Log analytics (discover indices, understand schema, query logs with PPL) | [references/observability/log-analytics.md](references/observability/log-analytics.md) |
+| OTel trace investigation (agent invocations, tool executions, slow spans, errors) | [references/observability/traces.md](references/observability/traces.md) |
+| PPL syntax reference (50+ commands, 14 function categories) | [references/observability/ppl-reference.md](references/observability/ppl-reference.md) |
