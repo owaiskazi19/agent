@@ -328,7 +328,7 @@ def main():
     # index-bulk
     p = sub.add_parser("index-bulk", help="Bulk index docs from a file")
     p.add_argument("--index", required=True)
-    p.add_argument("--count", type=int, default=10)
+    p.add_argument("--count", type=int, default=20)
     p.add_argument("--source-file", required=True, help="Local file path")
 
     # launch-ui
